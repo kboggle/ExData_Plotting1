@@ -1,0 +1,76 @@
+---
+title: "Exp Data Analysis "
+output: html_document
+---
+
+Downloading and extracting files
+```{r}
+setwd("~/Coursera/Exp Data Analysis")
+temp <- tempfile()
+download.file("https://d396qusza40orc.cloudfront.net/exdata%2Fdata%2Fhousehold_power_consumption.zip",temp, mode ="wb")
+unzip(temp)
+data<-file("household_power_consumption.txt","r")
+power_consumption<- read.table(text = grep("^[1,2]/2/2007",readLines(data),value=TRUE),
+                sep=";",
+                na.strings="?",
+                stringsAsFactors = FALSE)
+unlink(temp)
+```
+
+
+
+```{r}
+colnames(power_consumption) <- c("Date", "Time", "Global_active_power", "Global_reactive_power", "Voltage","Global_intensity", "Sub_metering_1", "Sub_metering_2", "Sub_metering_3")
+power_consumption$Date <- as.Date(power_consumption$Date, format="%d/%m/%Y")
+datetime <- paste(as.Date(power_consumption$Date), power_consumption$Time)
+power_consumption$DateTime <- as.POSIXct(datetime)
+```
+
+ ## Plot 1
+ 
+```{r}
+hist(power_consumption$Global_active_power, main = "Global Active Power", xlab = "Global Active Power (kilowatts)", ylab = "Frequency", col = "Red")
+dev.copy(png,'plot1.png', height=480, width=480)
+dev.off()
+
+```
+
+## Plot 2
+```{r}
+plot(power_consumption$Global_active_power~power_consumption$DateTime, type="l", ylab = "Global Active Power (kilowatts)", xlab = "")
+dev.copy(png,'plot2.png', height=480, width=480)
+dev.off()
+```
+
+## Plot 3
+
+```{r}
+with(power_consumption, {
+  plot(DateTime, Sub_metering_1,type="l",ylab="Energy sub metering",xlab="") 
+  lines(DateTime, Sub_metering_2, col="red")
+  lines(DateTime, Sub_metering_3, col="blue")
+  legend ("topright",lty=1, lwd=1, cex=0.75, col=c("black","red","blue"),legend=c("Sub_metering_1","Sub_metering_2","Sub_metering_3"))}
+)
+dev.copy(png, 'plot3.png', height=480, width=480)
+dev.off()
+
+```
+
+## Plot 4
+
+```{r}
+par(mfrow=c(2,2))
+
+plot(power_consumption$Global_active_power, ylab = "Global Active Power", xlab = "", type = "l")
+plot(power_consumption$Voltage~power_consumption$DateTime, ylab = "Voltage", xlab = "datetime", type = "l")
+with(power_consumption, {
+  plot(DateTime, Sub_metering_1,type="l",ylab="Energy sub metering",xlab="") 
+  lines(DateTime, Sub_metering_2, col="red")
+  lines(DateTime, Sub_metering_3, col="blue")
+  legend ("topright",lty=1, lwd=1, cex=0.75, col=c("black","red","blue"),legend=c("Sub_metering_1","Sub_metering_2","Sub_metering_3"))} )
+plot(power_consumption$Global_reactive_power~power_consumption$DateTime, ylab = "global_reactive_power", xlab = "datetime", type = "l")
+
+dev.copy(png, 'plot4.png', height=480, width=480)
+dev.off()
+```
+
